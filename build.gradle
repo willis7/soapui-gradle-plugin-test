@@ -1,0 +1,71 @@
+buildscript{
+    repositories {
+        mavenCentral()
+        maven { url 'http://www.eviware.com/repository/maven2/' }
+    }
+
+    dependencies {
+        classpath ('eviware:maven-soapui-plugin:4.5.1') {
+            exclude( module: 'jtidy' )
+            exclude( module: 'jms' )
+            exclude( module: 'log4j' )
+        }
+    }
+}
+
+ext {
+    projectFile = "calculator-soapui-project.xml"
+}
+
+import com.eviware.soapui.tools.SoapUITestCaseRunner
+import com.eviware.soapui.tools.SoapUIMockServiceRunner
+
+public class MySoapUITestCaseRunner extends SoapUITestCaseRunner {
+    @Override
+    void initGroovyLog() {
+    }
+}
+
+task testCaseRunner(description: 'Run SoapUITestCaseRunner', group: 'SoapUI') {
+    inputs.property('projectFile', projectFile)
+
+    doLast {
+        MySoapUITestCaseRunner testCaseRunner = new MySoapUITestCaseRunner()
+
+        try{
+            testCaseRunner.setProjectFile(projectFile)
+            testCaseRunner.run()
+        } catch (Exception e) {
+            throw new GradleException(e.message)
+        }
+    }
+}
+
+public class MySoapUIMockServiceRunner extends SoapUIMockServiceRunner {
+    @Override
+    void initGroovyLog() {
+    }
+}
+
+task mockServiceRunner(description: 'Run SoapUIMockServiceRunner', group: 'SoapUI') {
+    inputs.property('projectFile', projectFile)
+
+    doLast {
+        MySoapUIMockServiceRunner mockServiceRunner = new MySoapUIMockServiceRunner()
+
+        try{
+            mockServiceRunner.setProjectFile(projectFile)
+            mockServiceRunner.run()
+        } catch (Exception e) {
+            throw new GradleException(e.message)
+        }
+    }
+}
+
+wrapper {
+    gradleVersion = "2.4-20150326230024+0000"
+}
+
+task buildScriptDeps(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+    configurations = [buildscript.configurations.classpath]
+}
